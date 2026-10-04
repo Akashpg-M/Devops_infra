@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/Akashpg-M/Devops_infra'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                bat 'docker build -t node-rest-api ./Node_ci-cd'
+            }
+        }
+
+        stage('Stop Old Container') {
+            steps {
+                bat 'docker stop node-api || exit /b 0'
+                bat 'docker rm node-api || exit /b 0'
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                bat 'docker run -d -p 3000:3000 --name node-api node-rest-api'
+            }
+        }
+
+        stage('Test API') {
+            steps {
+                bat 'curl http://localhost:3000/status'
+            }
+        }
+    }
+}
